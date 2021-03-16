@@ -6,25 +6,31 @@ from library.lexicon_collect import LexiconCollect
 
 def print_dictionary_results(mw_dictionary_def: dict, ox_dictionary_def: dict):
     if mw_dictionary_def:
-        print(f'------------------------------------')
-        print(f'{mw_dictionary_def["word_break"]} ({mw_dictionary_def["part_of_speech"]}) '
-              f'{mw_dictionary_def["date_first_used"]}')
-        print(f'{mw_dictionary_def["pronounce"]}')
-        print(f'Similar Words: {mw_dictionary_def["stems"]}')
-        print(f'Definitions:')
-        for position, definition in enumerate(mw_dictionary_def["definition"]):
-            print(f'  {position}. {definition}')
-        print(f'Etymology: {mw_dictionary_def["etymology"]}')
+        try:
+            print(f'------------------------------------')
+            print(f'{mw_dictionary_def["word_break"]} ({mw_dictionary_def["part_of_speech"]}) '
+                  f'{mw_dictionary_def["date_first_used"]}')
+            print(f'{mw_dictionary_def["pronounce"]}')
+            print(f'Similar Words: {mw_dictionary_def["stems"]}')
+            print(f'Definitions:')
+            for position, definition in enumerate(mw_dictionary_def["definition"]):
+                print(f'  {position}. {definition}')
+            print(f'Etymology: {mw_dictionary_def["etymology"]}')
+        except KeyError as key_error:
+            print(f'Received TypeError: {key_error}')
 
     if ox_dictionary_def:
-        print(f'------------------------------------')
-        print(f'{ox_dictionary_def["word"]} ({ox_dictionary_def["part_of_speech"]})')
-        print(f'{ox_dictionary_def["pronounce"]}')
-        print(f'Audio: {ox_dictionary_def["audio"]}')
-        print(f'Definitions:')
-        for position, definition in enumerate(ox_dictionary_def["definition"]):
-            print(f'  {position}. {definition}')
-        print(f'Example Sentence: "{ox_dictionary_def["example"]}"')
+        try:
+            print(f'------------------------------------')
+            print(f'{ox_dictionary_def["word"]} ({ox_dictionary_def["part_of_speech"]})')
+            print(f'{ox_dictionary_def["pronounce"]}')
+            print(f'Audio: {ox_dictionary_def["audio"]}')
+            print(f'Definitions:')
+            for position, definition in enumerate(ox_dictionary_def["definition"]):
+                print(f'  {position}. {definition}')
+            print(f'Example Sentence: "{ox_dictionary_def["example"]}"')
+        except KeyError as key_error:
+            print(f'Received TypeError: {key_error}')
 
 
 if __name__ == '__main__':
