@@ -1,4 +1,4 @@
-from lexicon_collect import __version__
+from lexicon_collect.library import __version__
 
 
 def test_version():
