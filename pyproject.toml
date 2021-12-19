@@ -1,13 +1,14 @@
 [tool.poetry]
-name = 'lexicon_collect'
+name = 'lexicon_core'
 version = '0.1.0'
-description = 'Simple commandline and lib toolset for word definitions from Merriam Webster and Oxford dictionaries'
+description = 'Core libraries shared amongst the lexicon project'
 authors = ['roboto84 <7658704+roboto84@users.noreply.github.com>']
 
 [tool.poetry.dependencies]
-python = '^3.8'
+python = '^3.9'
 requests = '^2.25.0'
 python-dotenv = '^0.15.0'
+willow-core = {git = 'https://github.com/roboto84/willow_core.git', rev = '9621b80'}
 
 [tool.poetry.dev-dependencies]
 pytest = '^5.2'

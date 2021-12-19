@@ -1,8 +1,8 @@
 =================
-lexicon_collect
+lexicon_core
 =================
 
-Simple commandline and lib toolset for word definitions from Merriam Webster and Oxford dictionaries
+Core libraries shared amongst the lexicon project
 
 Commit Conventions
 ----------------------
