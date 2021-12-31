@@ -29,6 +29,11 @@ class LexiconDb(SqlLiteDb):
         except Error as error:
             self._logger.info(f'Error occurred initializing Air_DB', error)
 
+    def get_words(self):
+        conn: Connection = self._db_connect()
+        db_cursor: Cursor = conn.cursor()
+        return db_cursor.execute("""select * from WORDS order by time desc""").fetchall()
+
     def insert_word(self, def_data: dict) -> None:
         word: str = def_data['word']
         sql_path: str = 'lexicon_bot/bin/db/sql/insert_word.sql'
