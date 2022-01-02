@@ -1,8 +1,8 @@
 =================
-lexicon_core
+lexicon
 =================
 
-Core libraries shared amongst the lexicon project
+Command line and lib toolset for word definitions, spell check, and spelling suggestions
 
 Commit Conventions
 ----------------------
