@@ -83,13 +83,16 @@ class LexiconCollect:
                 if 'text' in ox_lex_ent_subset['lexicalCategory']:
                     part_of_speech = ox_lex_ent_subset['lexicalCategory']['text']
                 if 'pronunciations' in ox_lex_ent_subset['entries'][0]:
-                    pronounce = ox_lex_ent_subset['entries'][0]['pronunciations'][0]['phoneticSpelling']
+                    if len(ox_lex_ent_subset['entries'][0]['pronunciations']) > 1 and \
+                            ('phoneticSpelling' in ox_lex_ent_subset['entries'][0]['pronunciations'][0]):
+                        pronounce = ox_lex_ent_subset['entries'][0]['pronunciations'][0]['phoneticSpelling']
+                    if len(ox_lex_ent_subset['entries'][0]['pronunciations']) > 2 and \
+                            ('audioFile' in ox_lex_ent_subset['entries'][0]['pronunciations'][1]):
+                        audio_file = ox_lex_ent_subset['entries'][0]['pronunciations'][1]['audioFile']
                 if 'definitions' in ox_lex_ent_subset['entries'][0]['senses'][0]:
                     definition = ox_lex_ent_subset['entries'][0]['senses'][0]['definitions']
                 if 'examples' in ox_lex_ent_subset['entries'][0]['senses'][0]:
                     example = ox_lex_ent_subset['entries'][0]['senses'][0]['examples'][0]['text']
-                if 'audioFile' in ox_lex_ent_subset['entries'][0]['pronunciations'][1]:
-                    audio_file = ox_lex_ent_subset['entries'][0]['pronunciations'][1]['audioFile']
 
                 oxford_response = {
                     'state': 'available',
@@ -102,7 +105,7 @@ class LexiconCollect:
                 }
                 return oxford_response
             except KeyError as key_error:
-                print(f'Received TypeError: {key_error}')
+                print(f'Received TypeError (get_oxford_def): {key_error}')
                 return {'error': str(key_error)}
         else:
             return {'state': self.__unavail_state}
