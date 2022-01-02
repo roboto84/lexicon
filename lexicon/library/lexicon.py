@@ -1,22 +1,58 @@
 
 import enchant
-from typing import List
+import logging.config
+from typing import List, Any
 from .lexicon_collect import LexiconCollect
+from .db.lexicon_db import LexiconDb
 
 
 class Lexicon:
-    def __init__(self, webster_key: str, oxford_app_id: str, oxford_key: str):
+    def __init__(self, webster_key: str, oxford_app_id: str, oxford_key: str,
+                 sql_lite_db_path: str, logging_object: Any):
+        self._logger: logging.Logger = logging_object.getLogger(type(self).__name__)
+        self._logger.setLevel(logging.INFO)
         self.lexicon_collect = LexiconCollect(webster_key, oxford_app_id, oxford_key)
+        self._lexicon_db = LexiconDb(logging_object, sql_lite_db_path)
         self.enchant_dictionary = enchant.Dict('en_US')
 
     @staticmethod
-    def definition_is_acceptable(data: dict) -> bool:
+    def _definition_is_acceptable(data: dict) -> bool:
         webster_def_is_good = ('state' in data['merriam_webster'] and data['merriam_webster']['state'] != 'unavailable')
         oxford_def_is_good = ('state' in data['oxford'] and data['oxford']['state'] != 'unavailable')
         return webster_def_is_good or oxford_def_is_good
 
     @staticmethod
-    def parse_dictionary_data(data: dict) -> dict:
+    def definition_to_string(data: dict) -> str:
+        try:
+            definition_string: str = ''.join(f'◦ {single_def}\n' for single_def in data['definitions'])
+            word_pronunciations: str = ''.join(f'{pronunciation}, ' for pronunciation in data['pronounce']).rstrip(', ')
+            stems: str = ''.join(f'{stem}, ' for stem in data['stems']).rstrip(', ')
+
+            return f'\n📚  {data["word"].capitalize()} | {data["date_first_used"]} {data["part_of_speech"]}, ' \
+                   f'{data["word_break"]} / {word_pronunciations} \n' \
+                   f'{stems} \n' \
+                   f'{data["audio"]} \n\n' \
+                   f'etymology | {data["etymology"]} \n\n' \
+                   f'{definition_string} \n' \
+                   f'( ex | {data["example"].capitalize()} )'
+        except TypeError as type_error:
+            print(f'Received error (chat_message_builder): {str(type_error)}')
+
+    @staticmethod
+    def definition_summary(definition_data: dict):
+        word_def_summary: str = 'Sorry, no information on that word was found.'
+
+        if definition_data['definition_is_acceptable']:
+            word_def_summary = Lexicon.definition_to_string(definition_data)
+        elif 'spelling_suggestions' in definition_data and len(definition_data['spelling_suggestions']) > 0:
+            word_def_chat_message = 'Looks like the word is misspelled. Perhaps try ...\n\n'
+            spell_suggestions = ''.join(f'{spell_suggestion}, ' for spell_suggestion in
+                                        definition_data['spelling_suggestions'])
+            word_def_summary = f'{word_def_chat_message}{spell_suggestions}'.rstrip(',')
+        return word_def_summary
+
+    @staticmethod
+    def simple_dictionary_data(data: dict) -> dict:
         date_first_used: str = ''
         part_of_speech: str = ''
         word_break: str = ''
@@ -48,7 +84,9 @@ class Lexicon:
                     definitions = definitions + ox['definition']
 
             return {
-                'word': data["search_word"],
+                'word': data['search_word'],
+                'definition_is_acceptable': data['definition_is_acceptable'],
+                'spelling_suggestions': data['spelling_suggestions'],
                 'stems': stems,
                 'date_first_used': date_first_used,
                 'part_of_speech': part_of_speech,
@@ -68,22 +106,32 @@ class Lexicon:
     def spell_check_suggest(self, word: str) -> List[str]:
         return self.enchant_dictionary.suggest(word)
 
-    def get_dictionary_def(self, search_word: str) -> dict:
+    def get_definition(self, search_word):
+        definition_data: dict = self.get_dictionary_definitions(search_word)
+        simple_data: dict = self.simple_dictionary_data(definition_data)
+        if definition_data['definition_is_acceptable']:
+            self._lexicon_db.insert_word(simple_data)
+        return simple_data
+
+    def get_dictionary_definitions(self, search_word: str) -> dict:
         dictionary_payload: dict = {
             'search_word': search_word,
+            'definition_is_acceptable': False,
             'spelling_suggestions': [],
             'merriam_webster': self.lexicon_collect.get_merriam_webster_def(search_word),
             'oxford': self.lexicon_collect.get_oxford_def(search_word)
         }
+        dictionary_payload['definition_is_acceptable']: bool = Lexicon._definition_is_acceptable(dictionary_payload)
+
         if dictionary_payload['merriam_webster']['state'] == 'unavailable':
-            dictionary_payload['spelling_suggestions'] = [elem for elem in
-                                                          dictionary_payload['merriam_webster']['spelling_suggestions']
-                                                          if ' ' not in elem]
+            dictionary_payload['spelling_suggestions'] = [
+                elem for elem in dictionary_payload['merriam_webster']['spelling_suggestions'] if ' ' not in elem
+            ]
             del dictionary_payload['merriam_webster']['spelling_suggestions']
         else:
-            dictionary_payload['merriam_webster']['stems'] = [elem for elem in
-                                                              dictionary_payload['merriam_webster']['stems']
-                                                              if ' ' not in elem]
+            dictionary_payload['merriam_webster']['stems'] = [
+                elem for elem in dictionary_payload['merriam_webster']['stems'] if ' ' not in elem
+            ]
         if not self.spell_checker(search_word):
             for index, suggestion in enumerate(self.spell_check_suggest(search_word)):
                 if suggestion not in dictionary_payload['spelling_suggestions']:

@@ -53,7 +53,7 @@ class LexiconDb(SqlLiteDb):
                     db_cursor.execute(
                         file.read(),
                         (self._get_time(), word.lower(), word, def_data['date_first_used'], def_data['part_of_speech'],
-                         def_data['word_break'], def_data['pronounce'], def_data['audio'],
+                         def_data['word_break'], str(def_data['pronounce']), def_data['audio'],
                          str(def_data['etymology']), str(def_data['definitions']), str(def_data['example'])))
             except IOError as io_error:
                 self._logger.error(f'IOError was thrown: {str(io_error)}')
