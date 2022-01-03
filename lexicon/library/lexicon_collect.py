@@ -1,5 +1,7 @@
 
 import re
+import logging.config
+from typing import Any
 from .data_source import DataSource
 
 
@@ -10,7 +12,9 @@ class LexiconCollect:
         'spelling_suggestions': []
     }
 
-    def __init__(self, webster_key: str, oxford_app_id: str, oxford_key: str):
+    def __init__(self, webster_key: str, oxford_app_id: str, oxford_key: str, logging_object: Any):
+        self._logger: logging.Logger = logging_object.getLogger(type(self).__name__)
+        self._logger.setLevel(logging.INFO)
         self.webster_api_key = webster_key
         self.oxford_app_id = oxford_app_id
         self.oxford_key = oxford_key
@@ -53,10 +57,10 @@ class LexiconCollect:
                     return merriam_response
 
                 except KeyError as key_error:
-                    print(f'Received TypeError: {key_error}')
+                    self._logger.error(f'Received KeyError: {str(key_error)}')
                     return {'error': str(key_error)}
                 except TypeError as type_error:
-                    print(f'Received TypeError: {type_error}')
+                    self._logger.error(f'Received TypeError: {str(type_error)}')
                     exit()
             elif type(merriam_dictionary_response) is list:
                 return {
@@ -105,7 +109,7 @@ class LexiconCollect:
                 }
                 return oxford_response
             except KeyError as key_error:
-                print(f'Received TypeError (get_oxford_def): {key_error}')
+                self._logger.error(f'Received TypeError (get_oxford_def): {str(key_error)}')
                 return {'error': str(key_error)}
         else:
             return {'state': self.__unavail_state}

@@ -12,7 +12,7 @@ class Lexicon:
                  sql_lite_db_path: str, logging_object: Any):
         self._logger: logging.Logger = logging_object.getLogger(type(self).__name__)
         self._logger.setLevel(logging.INFO)
-        self.lexicon_collect = LexiconCollect(webster_key, oxford_app_id, oxford_key)
+        self.lexicon_collect = LexiconCollect(webster_key, oxford_app_id, oxford_key, logging_object)
         self._lexicon_db = LexiconDb(logging_object, sql_lite_db_path)
         self.enchant_dictionary = enchant.Dict('en_US')
 
@@ -39,32 +39,42 @@ class Lexicon:
         return self._lexicon_db.get_words()
 
     def get_definition(self, search_word) -> dict:
-        simple_definition_data: dict = LexiconUtils.simple_dictionary_data(self.get_dictionary_definitions(search_word))
-        if simple_definition_data['definition_is_acceptable']:
-            self._lexicon_db.insert_word(simple_definition_data)
+        simple_definition_data: dict
+        attempt_db_word_definition: dict = self._lexicon_db.get_word_from_db(search_word)
+
+        if attempt_db_word_definition:
+            simple_definition_data = LexiconUtils.dictionary_data_from_db(attempt_db_word_definition)
+        else:
+            simple_definition_data = LexiconUtils.dictionary_data_from_api(self.get_dictionary_definitions(search_word))
+            if simple_definition_data['definition_is_acceptable']:
+                self._lexicon_db.insert_word(simple_definition_data)
         return simple_definition_data
 
     def get_dictionary_definitions(self, search_word: str) -> dict:
-        dictionary_payload: dict = {
-            'search_word': search_word,
-            'definition_is_acceptable': False,
-            'spelling_suggestions': [],
-            'merriam_webster': self.lexicon_collect.get_merriam_webster_def(search_word),
-            'oxford': self.lexicon_collect.get_oxford_def(search_word)
-        }
-        dictionary_payload['definition_is_acceptable']: bool = LexiconUtils.definition_is_acceptable(dictionary_payload)
+        try:
+            dictionary_payload: dict = {
+                'search_word': search_word,
+                'definition_is_acceptable': False,
+                'spelling_suggestions': [],
+                'merriam_webster': self.lexicon_collect.get_merriam_webster_def(search_word),
+                'oxford': self.lexicon_collect.get_oxford_def(search_word)
+            }
+            dictionary_payload['definition_is_acceptable']: bool = LexiconUtils.definition_is_acceptable(dictionary_payload)
 
-        if dictionary_payload['merriam_webster']['state'] == 'unavailable':
-            dictionary_payload['spelling_suggestions'] = [
-                elem for elem in dictionary_payload['merriam_webster']['spelling_suggestions'] if ' ' not in elem
-            ]
-            del dictionary_payload['merriam_webster']['spelling_suggestions']
-        else:
-            dictionary_payload['merriam_webster']['stems'] = [
-                elem for elem in dictionary_payload['merriam_webster']['stems'] if ' ' not in elem
-            ]
-        if not self.spell_checker(search_word):
-            for index, suggestion in enumerate(self.spell_check_suggest(search_word)):
-                if suggestion not in dictionary_payload['spelling_suggestions']:
-                    dictionary_payload['spelling_suggestions'].append(suggestion)
-        return dictionary_payload
+            if dictionary_payload['merriam_webster']['state'] == 'unavailable':
+                dictionary_payload['spelling_suggestions'] = [
+                    elem for elem in dictionary_payload['merriam_webster']['spelling_suggestions'] if ' ' not in elem
+                ]
+                del dictionary_payload['merriam_webster']['spelling_suggestions']
+            else:
+                dictionary_payload['merriam_webster']['stems'] = [
+                    elem for elem in dictionary_payload['merriam_webster']['stems'] if ' ' not in elem
+                ]
+            if not self.spell_checker(search_word):
+                for index, suggestion in enumerate(self.spell_check_suggest(search_word)):
+                    if suggestion not in dictionary_payload['spelling_suggestions']:
+                        dictionary_payload['spelling_suggestions'].append(suggestion)
+            return dictionary_payload
+        except KeyError as key_error:
+            self._logger.error(f'Received TypeError (get_oxford_def): {str(key_error)}')
+            return {'error': str(key_error)}

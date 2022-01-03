@@ -1,4 +1,6 @@
 
+import ast
+
 
 class LexiconUtils:
     @staticmethod
@@ -25,7 +27,29 @@ class LexiconUtils:
             print(f'Received error (chat_message_builder): {str(type_error)}')
 
     @staticmethod
-    def simple_dictionary_data(data: dict) -> dict:
+    def dictionary_data_from_db(data: dict) -> dict:
+        try:
+            return {
+                'word': data['word'],
+                'definition_is_acceptable': True,
+                'spelling_suggestions': [],
+                'stems': [],
+                'date_first_used': data['date_first_used'],
+                'part_of_speech': data['part_of_speech'],
+                'word_break': data['word_break'],
+                'pronounce': ast.literal_eval(data['pronounce']),
+                'audio': data['audio'],
+                'etymology': data['etymology'],
+                'definitions': ast.literal_eval(data['definitions']),
+                'example': data['example']
+            }
+        except TypeError as type_error:
+            print(f'Received error (dictionary_data_from_db): {str(type_error)}')
+        except KeyError as key_error:
+            print(f'Received KeyError (dictionary_data_from_db): {str(key_error)}')
+
+    @staticmethod
+    def dictionary_data_from_api(data: dict) -> dict:
         date_first_used: str = ''
         part_of_speech: str = ''
         word_break: str = ''
@@ -71,4 +95,6 @@ class LexiconUtils:
                 'example': example
             }
         except TypeError as type_error:
-            print(f'Received error (parse_dictionary_data): {str(type_error)}')
+            print(f'Received error (dictionary_data_from_api): {str(type_error)}')
+        except KeyError as key_error:
+            print(f'Received KeyError (dictionary_data_from_api): {str(key_error)}')

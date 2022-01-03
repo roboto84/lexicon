@@ -1,8 +1,9 @@
+
 import logging.config
 import os
 from willow_core.library.sqlite_db import SqlLiteDb
 from sqlite3 import Connection, Cursor, Error
-from typing import Any
+from typing import Any, List
 
 
 class LexiconDb(SqlLiteDb):
@@ -32,19 +33,41 @@ class LexiconDb(SqlLiteDb):
             self._db_close(conn)
             self._logger.info(f'Database has been initialized')
         except Error as error:
-            self._logger.error(f'Error occurred initializing Air_DB: {str(error)}')
+            self._logger.error(f'Error occurred initializing Lexi_DB: {str(error)}')
 
-    def get_words(self):
-        conn: Connection = self._db_connect()
-        db_cursor: Cursor = conn.cursor()
-        return db_cursor.execute("""select * from WORDS order by id desc""").fetchall()
+    def get_words(self) -> List[str]:
+        try:
+            conn: Connection = self._db_connect()
+            db_cursor: Cursor = conn.cursor()
+            db_words_result: List[list] = db_cursor.execute(
+                """select word_letter_cased from WORDS order by id desc""").fetchall()
+            self._logger.info(f'Retrieved words from Lexi_DB successfully')
+            return [row[0] for row in db_words_result]
+        except Error as error:
+            self._logger.error(f'Error occurred getting words from Lexi_DB: {str(error)}')
+
+    def get_word_from_db(self, search_word) -> dict:
+        try:
+            conn: Connection = self._db_connect()
+            self.set_row_factory(conn)
+            db_cursor: Cursor = conn.cursor()
+            db_word_result: List[dict] = db_cursor.execute(
+                """select * from WORDS where word is ?""", [search_word]).fetchall()
+            if db_word_result and len(db_word_result) == 1:
+                self._logger.info(f'Retrieved word "{search_word}" from Lexi_DB successfully')
+                return dict(db_word_result[0])
+            else:
+                self._logger.info(f'Word "{search_word}" not in Lexi_DB')
+                return {}
+        except Error as error:
+            self._logger.error(f'Error occurred getting word "{search_word}" from Lexi_DB: {str(error)}')
 
     def insert_word(self, def_data: dict) -> None:
         word: str = def_data['word']
         sql_path: str = self.add_file_path('/sql/insert_word.sql')
         conn: Connection = self._db_connect()
         db_cursor: Cursor = conn.cursor()
-        table_list = db_cursor.execute("""SELECT word FROM WORDS WHERE word=?;""", [word]).fetchall()
+        table_list = db_cursor.execute("""SELECT word FROM WORDS WHERE word is ?;""", [word]).fetchall()
 
         if not table_list:
             try:
@@ -60,5 +83,5 @@ class LexiconDb(SqlLiteDb):
             except Exception as exception:
                 self._logger.error(f'Exception was thrown: {str(exception)}')
         else:
-            self._logger.info(f'"{word}" is already in the DB')
+            self._logger.info(f'"{word}" is already in the DB, not reinserting')
         self._db_close(conn)
