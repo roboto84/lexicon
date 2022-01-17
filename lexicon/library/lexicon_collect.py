@@ -87,10 +87,10 @@ class LexiconCollect:
                 if 'text' in ox_lex_ent_subset['lexicalCategory']:
                     part_of_speech = ox_lex_ent_subset['lexicalCategory']['text']
                 if 'pronunciations' in ox_lex_ent_subset['entries'][0]:
-                    if len(ox_lex_ent_subset['entries'][0]['pronunciations']) > 1 and \
+                    if len(ox_lex_ent_subset['entries'][0]['pronunciations']) > 0 and \
                             ('phoneticSpelling' in ox_lex_ent_subset['entries'][0]['pronunciations'][0]):
                         pronounce = ox_lex_ent_subset['entries'][0]['pronunciations'][0]['phoneticSpelling']
-                    if len(ox_lex_ent_subset['entries'][0]['pronunciations']) > 2 and \
+                    if len(ox_lex_ent_subset['entries'][0]['pronunciations']) > 1 and \
                             ('audioFile' in ox_lex_ent_subset['entries'][0]['pronunciations'][1]):
                         audio_file = ox_lex_ent_subset['entries'][0]['pronunciations'][1]['audioFile']
                 if 'definitions' in ox_lex_ent_subset['entries'][0]['senses'][0]:
