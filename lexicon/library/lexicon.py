@@ -39,27 +39,33 @@ class Lexicon:
         return self._lexicon_db.get_words()
 
     def get_definition(self, search_word) -> dict:
+        trimmed_search_word: str = search_word.strip()
         simple_definition_data: dict
-        attempt_db_word_definition: dict = self._lexicon_db.get_word_from_db(search_word)
+        attempt_db_word_definition: dict = self._lexicon_db.get_word_from_db(trimmed_search_word)
 
         if attempt_db_word_definition:
             simple_definition_data = LexiconUtils.dictionary_data_from_db(attempt_db_word_definition)
         else:
-            simple_definition_data = LexiconUtils.dictionary_data_from_api(self.get_dictionary_definitions(search_word))
+            simple_definition_data = LexiconUtils.dictionary_data_from_api(
+                self.get_dictionary_definitions(trimmed_search_word)
+            )
             if simple_definition_data['definition_is_acceptable']:
                 self._lexicon_db.insert_word(simple_definition_data)
         return simple_definition_data
 
     def get_dictionary_definitions(self, search_word: str) -> dict:
         try:
+            trimmed_search_word: str = search_word.strip()
             dictionary_payload: dict = {
-                'search_word': search_word,
+                'search_word': trimmed_search_word,
                 'definition_is_acceptable': False,
                 'spelling_suggestions': [],
-                'merriam_webster': self.lexicon_collect.get_merriam_webster_def(search_word),
-                'oxford': self.lexicon_collect.get_oxford_def(search_word)
+                'merriam_webster': self.lexicon_collect.get_merriam_webster_def(trimmed_search_word),
+                'oxford': self.lexicon_collect.get_oxford_def(trimmed_search_word)
             }
-            dictionary_payload['definition_is_acceptable']: bool = LexiconUtils.definition_is_acceptable(dictionary_payload)
+            dictionary_payload['definition_is_acceptable']: bool = LexiconUtils.definition_is_acceptable(
+                dictionary_payload
+            )
 
             if dictionary_payload['merriam_webster']['state'] == 'unavailable':
                 dictionary_payload['spelling_suggestions'] = [
@@ -70,8 +76,8 @@ class Lexicon:
                 dictionary_payload['merriam_webster']['stems'] = [
                     elem for elem in dictionary_payload['merriam_webster']['stems'] if ' ' not in elem
                 ]
-            if not self.spell_checker(search_word):
-                for index, suggestion in enumerate(self.spell_check_suggest(search_word)):
+            if not self.spell_checker(trimmed_search_word):
+                for index, suggestion in enumerate(self.spell_check_suggest(trimmed_search_word)):
                     if suggestion not in dictionary_payload['spelling_suggestions']:
                         dictionary_payload['spelling_suggestions'].append(suggestion)
             return dictionary_payload

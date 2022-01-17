@@ -20,7 +20,7 @@ if __name__ == '__main__':
             search_word = sys.argv[1]
             lexicon = Lexicon(MERRIAM_WEBSTER_API_KEY, OXFORD_APP_ID, OXFORD_APP_KEY, SQL_LITE_DB, logging)
             print(f'\nSearching...')
-            print(lexicon.definition_summary(lexicon.get_definition(search_word)))
+            print(f'{lexicon.definition_summary(lexicon.get_definition(search_word))}\n')
         else:
             print('Please give a word to search')
 
