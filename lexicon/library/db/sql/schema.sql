@@ -10,6 +10,7 @@ CREATE TABLE WORDS(
     pronounce TEXT NOT NULL,
     audio TEXT NOT NULL,
     etymology TEXT NOT NULL,
+    stems TEXT NOT NULL,
     definitions TEXT NOT NULL,
     example TEXT NOT NULL
 );

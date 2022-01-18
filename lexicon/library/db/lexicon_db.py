@@ -29,7 +29,7 @@ class LexiconDb(SqlLiteDb):
             conn: Connection = self._db_connect()
             with open(self.add_file_path('/sql/schema.sql')) as f:
                 conn.executescript(f.read())
-            self._logger.info(f'Initializing Air_DB schema')
+            self._logger.info(f'Initializing Lexi_DB schema')
             self._db_close(conn)
             self._logger.info(f'Database has been initialized')
         except Error as error:
@@ -45,6 +45,23 @@ class LexiconDb(SqlLiteDb):
             return [row[0] for row in db_words_result]
         except Error as error:
             self._logger.error(f'Error occurred getting words from Lexi_DB: {str(error)}')
+
+    def get_random_word_def(self) -> dict:
+        try:
+            conn: Connection = self._db_connect()
+            self.set_row_factory(conn)
+            db_cursor: Cursor = conn.cursor()
+            db_word_result: List[dict] = db_cursor.execute(
+                """select * from WORDS where rowid = 
+                (abs(random()) % (select (select max(rowid) from WORDS)+1));""").fetchall()
+            if db_word_result and len(db_word_result) == 1:
+                self._logger.info(f'Retrieved a random word from Lexi_DB successfully')
+                return dict(db_word_result[0])
+            else:
+                self._logger.info(f'Random word index was not in Lexi_DB')
+                return {}
+        except Error as error:
+            self._logger.error(f'Error occurred getting word a random word from Lexi_DB: {str(error)}')
 
     def get_word_from_db(self, search_word) -> dict:
         try:
@@ -77,7 +94,8 @@ class LexiconDb(SqlLiteDb):
                         file.read(),
                         (self._get_time(), word.lower(), word, def_data['date_first_used'], def_data['part_of_speech'],
                          def_data['word_break'], str(def_data['pronounce']), def_data['audio'],
-                         str(def_data['etymology']), str(def_data['definitions']), str(def_data['example'])))
+                         str(def_data['etymology']), str(def_data['stems']), str(def_data['definitions']),
+                         str(def_data['example'])))
             except IOError as io_error:
                 self._logger.error(f'IOError was thrown: {str(io_error)}')
             except Exception as exception:

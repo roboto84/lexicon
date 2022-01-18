@@ -33,7 +33,7 @@ class LexiconUtils:
                 'word': data['word'],
                 'definition_is_acceptable': True,
                 'spelling_suggestions': [],
-                'stems': [],
+                'stems': ast.literal_eval(data['stems']),
                 'date_first_used': data['date_first_used'],
                 'part_of_speech': data['part_of_speech'],
                 'word_break': data['word_break'],
