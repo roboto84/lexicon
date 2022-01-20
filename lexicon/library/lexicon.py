@@ -51,10 +51,12 @@ class Lexicon:
 
         if attempt_db_word_definition:
             simple_definition_data = LexiconUtils.dictionary_data_from_db(attempt_db_word_definition)
+            simple_definition_data['source'] = 'db'
         else:
             simple_definition_data = LexiconUtils.dictionary_data_from_api(
                 self.get_dictionary_definitions(trimmed_search_word)
             )
+            simple_definition_data['source'] = 'web'
             if simple_definition_data['definition_is_acceptable']:
                 self._lexicon_db.insert_word(simple_definition_data)
         return simple_definition_data

@@ -17,12 +17,12 @@ class LexiconUtils:
             stems: str = ''.join(f'{stem}, ' for stem in data['stems']).rstrip(', ')
 
             return f'\n📚  {data["word"].capitalize()} | {data["date_first_used"]} {data["part_of_speech"]}, ' \
-                   f'{data["word_break"]} / {word_pronunciations} \n' \
+                   f'{data["word_break"]} / {word_pronunciations} ({data["source"]})\n' \
                    f'{stems} \n' \
                    f'{data["audio"]} \n\n' \
                    f'etymology | {data["etymology"]} \n\n' \
                    f'{definition_string} \n' \
-                   f'( ex | {data["example"].capitalize()} )'
+                   f'( ex | {data["example"].capitalize()} )\n'
         except TypeError as type_error:
             print(f'Received error (chat_message_builder): {str(type_error)}')
 

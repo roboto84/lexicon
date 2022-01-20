@@ -69,7 +69,7 @@ class LexiconDb(SqlLiteDb):
             self.set_row_factory(conn)
             db_cursor: Cursor = conn.cursor()
             db_word_result: List[dict] = db_cursor.execute(
-                """select * from WORDS where word is ?""", [search_word]).fetchall()
+                """select * from WORDS where word_letter_cased is ?""", [search_word]).fetchall()
             if db_word_result and len(db_word_result) == 1:
                 self._logger.info(f'Retrieved word "{search_word}" from Lexi_DB successfully')
                 return dict(db_word_result[0])
