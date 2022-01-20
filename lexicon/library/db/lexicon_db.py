@@ -3,7 +3,7 @@ import logging.config
 import os
 from willow_core.library.sqlite_db import SqlLiteDb
 from sqlite3 import Connection, Cursor, Error
-from typing import Any, List
+from typing import Any, List, Optional
 
 
 class LexiconDb(SqlLiteDb):
@@ -35,12 +35,14 @@ class LexiconDb(SqlLiteDb):
         except Error as error:
             self._logger.error(f'Error occurred initializing Lexi_DB: {str(error)}')
 
-    def get_words(self) -> List[str]:
+    def get_words(self, word_limit: Optional[int] = None) -> List[str]:
         try:
+            sqlite_query: str = """select word_letter_cased from WORDS order by id desc"""
+            if word_limit:
+                sqlite_query: str = f'{sqlite_query} limit {word_limit}'
             conn: Connection = self._db_connect()
             db_cursor: Cursor = conn.cursor()
-            db_words_result: List[list] = db_cursor.execute(
-                """select word_letter_cased from WORDS order by id desc""").fetchall()
+            db_words_result: List[list] = db_cursor.execute(sqlite_query).fetchall()
             self._logger.info(f'Retrieved words from Lexi_DB successfully')
             return [row[0] for row in db_words_result]
         except Error as error:

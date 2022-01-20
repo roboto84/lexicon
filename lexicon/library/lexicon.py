@@ -1,7 +1,7 @@
 
 import enchant
 import logging.config
-from typing import List, Any
+from typing import List, Any, Optional
 from .lexicon_collect import LexiconCollect
 from .lexicon_utils import LexiconUtils
 from .db.lexicon_db import LexiconDb
@@ -35,8 +35,11 @@ class Lexicon:
     def spell_check_suggest(self, word: str) -> List[str]:
         return self.enchant_dictionary.suggest(word)
 
-    def get_stored_words(self) -> List[str]:
-        return self._lexicon_db.get_words()
+    def get_stored_words(self, word_limit: Optional[int] = None) -> List[str]:
+        return self._lexicon_db.get_words(word_limit)
+
+    def get_last_20_words(self) -> List[str]:
+        return self._lexicon_db.get_words(20)
 
     def get_random_word_def(self) -> dict:
         simple_definition_data: dict = {}
