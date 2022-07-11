@@ -10,19 +10,27 @@ class LexiconUtils:
         return webster_def_is_good or oxford_def_is_good
 
     @staticmethod
+    def term_view(term: str) -> str:
+        return term if 'n/a' not in term.lower() and 'unk' not in term.lower() else ''
+
+    @staticmethod
     def definition_to_string(data: dict) -> str:
         try:
+            nl = '\n'
             definition_string: str = ''.join(f'◦ {single_def}\n' for single_def in data['definitions'])
-            word_pronunciations: str = ''.join(f'{pronunciation}, ' for pronunciation in data['pronounce']).rstrip(', ')
+            word_pronunciations: str = ''.join(
+                f'{LexiconUtils.term_view(pronunciation)}, ' for pronunciation in data['pronounce']
+            ).rstrip(', ')
             stems: str = ''.join(f'{stem}, ' for stem in data['stems']).rstrip(', ')
 
-            return f'\n📚  {data["word"].capitalize()} | {data["date_first_used"]} {data["part_of_speech"]}, ' \
-                   f'{data["word_break"]} / {word_pronunciations} ({data["source"]})\n' \
-                   f'{stems} \n' \
-                   f'{data["audio"]} \n\n' \
-                   f'etymology | {data["etymology"]} \n\n' \
-                   f'{definition_string} \n' \
-                   f'( ex | {data["example"].capitalize()} )\n'
+            return f'📚  {data["word"].capitalize()} | {LexiconUtils.term_view(data["date_first_used"])} ' \
+                   f'{LexiconUtils.term_view(f"""{data["part_of_speech"]}, """)}' \
+                   f'{LexiconUtils.term_view(data["word_break"])} / {word_pronunciations} ({data["source"]})\n' \
+                   f'{stems}' \
+                   f'{LexiconUtils.term_view(f"""{nl}{data["audio"]}""")}' \
+                   f'{LexiconUtils.term_view(f"""{nl}{nl}etymology | {data["etymology"]}""")}' \
+                   f'\n\n{definition_string}' \
+                   f'{LexiconUtils.term_view(f"""{nl}( ex | {data["example"].capitalize()} ){nl}""")}'
         except TypeError as type_error:
             print(f'Received error (chat_message_builder): {str(type_error)}')
 
