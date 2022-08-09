@@ -9,7 +9,7 @@ python = '^3.10'
 requests = '^2.25.0'
 python-dotenv = '^0.15.0'
 pyenchant = '^3.2.0'
-willow-core = {git = 'https://github.com/roboto84/willow_core.git', rev = '59d8f44'}
+willow-core = {git = 'https://github.com/roboto84/willow_core.git', rev = '646a99f'}
 
 [tool.poetry.dev-dependencies]
 pytest = '^6.2.5'
