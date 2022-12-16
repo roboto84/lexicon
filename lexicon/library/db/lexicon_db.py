@@ -54,8 +54,7 @@ class LexiconDb(SqlLiteDb):
             self.set_row_factory(conn)
             db_cursor: Cursor = conn.cursor()
             db_word_result: List[dict] = db_cursor.execute(
-                """select * from WORDS where rowid = 
-                (abs(random()) % (select (select max(rowid) from WORDS)+1));""").fetchall()
+                """SELECT * FROM WORDS ORDER BY RANDOM() LIMIT 1;""").fetchall()
             if db_word_result and len(db_word_result) == 1:
                 self._logger.info(f'Retrieved a random word from Lexi_DB successfully')
                 return dict(db_word_result[0])

@@ -42,10 +42,9 @@ class Lexicon:
         return self._lexicon_db.get_words(20)
 
     def get_random_word_def(self) -> dict:
-        simple_definition_data: dict = {}
-        while not simple_definition_data:
-            simple_definition_data = self._lexicon_db.get_random_word_def()
-        return LexiconUtils.dictionary_data_from_db(simple_definition_data)
+        return LexiconUtils.dictionary_data_from_db(
+            self._lexicon_db.get_random_word_def()
+        )
 
     def get_definition(self, search_word) -> dict:
         trimmed_search_word: str = search_word.strip()
