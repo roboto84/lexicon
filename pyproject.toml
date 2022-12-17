@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'lexicon'
-version = '0.1.0'
+version = '0.1.1'
 description = 'Command line and lib toolset for word definitions, spell check, and spelling suggestions'
 authors = ['roboto84 <7658704+roboto84@users.noreply.github.com>']
 

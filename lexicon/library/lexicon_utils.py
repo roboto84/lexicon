@@ -37,20 +37,23 @@ class LexiconUtils:
     @staticmethod
     def dictionary_data_from_db(data: dict) -> dict:
         try:
-            return {
-                'word': data['word'],
-                'definition_is_acceptable': True,
-                'spelling_suggestions': [],
-                'stems': ast.literal_eval(data['stems']),
-                'date_first_used': data['date_first_used'],
-                'part_of_speech': data['part_of_speech'],
-                'word_break': data['word_break'],
-                'pronounce': ast.literal_eval(data['pronounce']),
-                'audio': data['audio'],
-                'etymology': data['etymology'],
-                'definitions': ast.literal_eval(data['definitions']),
-                'example': data['example']
-            }
+            if 'word' in data:
+                return {
+                    'word': data['word'],
+                    'definition_is_acceptable': True,
+                    'spelling_suggestions': [],
+                    'stems': ast.literal_eval(data['stems']),
+                    'date_first_used': data['date_first_used'],
+                    'part_of_speech': data['part_of_speech'],
+                    'word_break': data['word_break'],
+                    'pronounce': ast.literal_eval(data['pronounce']),
+                    'audio': data['audio'],
+                    'etymology': data['etymology'],
+                    'definitions': ast.literal_eval(data['definitions']),
+                    'example': data['example']
+                }
+            else:
+                return {}
         except TypeError as type_error:
             print(f'Received error (dictionary_data_from_db): {str(type_error)}')
         except KeyError as key_error:

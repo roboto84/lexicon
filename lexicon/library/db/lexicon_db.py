@@ -64,13 +64,13 @@ class LexiconDb(SqlLiteDb):
         except Error as error:
             self._logger.error(f'Error occurred getting word a random word from Lexi_DB: {str(error)}')
 
-    def get_word_from_db(self, search_word) -> dict:
+    def get_word_from_db(self, search_word: str) -> dict:
         try:
             conn: Connection = self._db_connect()
             self.set_row_factory(conn)
             db_cursor: Cursor = conn.cursor()
             db_word_result: List[dict] = db_cursor.execute(
-                """select * from WORDS where word_letter_cased is ?""", [search_word]).fetchall()
+                """select * from WORDS where word is ?""", [search_word.lower()]).fetchall()
             if db_word_result and len(db_word_result) == 1:
                 self._logger.info(f'Retrieved word "{search_word}" from Lexi_DB successfully')
                 return dict(db_word_result[0])
@@ -81,7 +81,7 @@ class LexiconDb(SqlLiteDb):
             self._logger.error(f'Error occurred getting word "{search_word}" from Lexi_DB: {str(error)}')
 
     def insert_word(self, def_data: dict) -> None:
-        word: str = def_data['word']
+        word: str = def_data['word'].lower()
         sql_path: str = self.add_file_path('/sql/insert_word.sql')
         conn: Connection = self._db_connect()
         db_cursor: Cursor = conn.cursor()

@@ -46,7 +46,7 @@ class Lexicon:
             self._lexicon_db.get_random_word_def()
         )
 
-    def get_definition(self, search_word) -> dict:
+    def get_definition(self, search_word: str) -> dict:
         trimmed_search_word: str = search_word.strip()
         simple_definition_data: dict
         attempt_db_word_definition: dict = self._lexicon_db.get_word_from_db(trimmed_search_word)
