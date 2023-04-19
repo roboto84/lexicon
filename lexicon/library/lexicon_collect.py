@@ -72,6 +72,7 @@ class LexiconCollect:
         else:
             return self.__unavailable_definition
 
+    @DeprecationWarning
     def get_oxford_def(self, search_word: str) -> dict:
         oxford_dictionary_response = DataSource.query_oxford_api(self.oxford_app_id, self.oxford_key, search_word)
         if oxford_dictionary_response:
@@ -108,6 +109,65 @@ class LexiconCollect:
                     'example': example
                 }
                 return oxford_response
+            except KeyError as key_error:
+                self._logger.error(f'Received TypeError (get_oxford_def): {str(key_error)}')
+                return {'error': str(key_error)}
+        else:
+            return {'state': self.__unavail_state}
+
+    def get_dictionaryapi_def(self, search_word: str) -> dict:
+        dictionaryapi_dictionary_response = DataSource.query_dictionaryapi(search_word)
+        if dictionaryapi_dictionary_response and 'title' not in dictionaryapi_dictionary_response:
+            try:
+                dictionary_response: dict = dictionaryapi_dictionary_response[0]
+                definition = ['n/a']
+                example = audio_file = part_of_speech = pronounce = 'n/a'
+                word = search_word
+
+                if 'word' in dictionary_response:
+                    word = dictionary_response['word']
+
+                if 'phonetics' in dictionary_response and len(dictionary_response['phonetics']) > 0:
+                    for phonetic in dictionary_response['phonetics']:
+                        if 'text' in phonetic and 'audio' in phonetic:
+                            pronounce = phonetic['text']
+                            audio_file = phonetic['audio']
+                            break
+
+                if 'meanings' in dictionary_response and len(dictionary_response['meanings']) > 0:
+                    for meaning in dictionary_response['meanings']:
+                        temp_part_of_speech: str = ''
+
+                        if 'partOfSpeech' in meaning:
+                            if part_of_speech == 'n/a':
+                                part_of_speech = ''
+                            temp_part_of_speech = meaning['partOfSpeech']
+                            part_of_speech = temp_part_of_speech if part_of_speech == '' \
+                                else f'{part_of_speech}, {temp_part_of_speech}'
+
+                        if 'definitions' in meaning and len(meaning['definitions']) > 0:
+                            if definition[0] == 'n/a':
+                                definition = []
+
+                            for definition_container in meaning['definitions']:
+                                part_of_speech_view = f'({temp_part_of_speech})' if temp_part_of_speech != '' else ''
+
+                                if len(definition_container) > 0:
+                                    definition.append(f'{definition_container["definition"]} {part_of_speech_view}')
+
+                                if 'example' in definition_container and len(definition_container['example']) >= len(example):
+                                    example = definition_container['example']
+
+                dictionaryapi_response = {
+                    'state': 'available',
+                    'word': word,
+                    'part_of_speech': part_of_speech,
+                    'pronounce': pronounce,
+                    'audio': audio_file,
+                    'definition': definition,
+                    'example': example
+                }
+                return dictionaryapi_response
             except KeyError as key_error:
                 self._logger.error(f'Received TypeError (get_oxford_def): {str(key_error)}')
                 return {'error': str(key_error)}

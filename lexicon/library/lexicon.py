@@ -71,7 +71,7 @@ class Lexicon:
                 'definition_is_acceptable': False,
                 'spelling_suggestions': [],
                 'merriam_webster': self.lexicon_collect.get_merriam_webster_def(trimmed_search_word),
-                'oxford': self.lexicon_collect.get_oxford_def(trimmed_search_word)
+                'oxford': self.lexicon_collect.get_dictionaryapi_def(trimmed_search_word)
             }
             dictionary_payload['definition_is_acceptable']: bool = LexiconUtils.definition_is_acceptable(
                 dictionary_payload

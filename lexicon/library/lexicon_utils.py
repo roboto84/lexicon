@@ -87,6 +87,8 @@ class LexiconUtils:
                 ox = data['oxford']
                 audio = ox['audio'] if ('audio' in ox) else 'unk'
                 example = ox['example'] if ('example' in ox) else 'unk'
+                part_of_speech = ox['part_of_speech'] if ('part_of_speech' in ox and len(ox['part_of_speech']) > 0) \
+                    else part_of_speech
                 pronounce.append((ox['pronounce'] if ('pronounce' in ox) else 'unk'))
                 if 'definition' in ox and len(ox['definition']) > 0:
                     definitions = definitions + ox['definition']
