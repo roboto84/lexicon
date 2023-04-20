@@ -5,6 +5,7 @@ from typing import List, Any, Optional
 from .lexicon_collect import LexiconCollect
 from .lexicon_utils import LexiconUtils
 from .db.lexicon_db import LexiconDb
+from .types import WordDefinition
 
 
 class Lexicon:
@@ -63,10 +64,10 @@ class Lexicon:
                 self._lexicon_db.insert_word(simple_definition_data)
         return simple_definition_data
 
-    def get_dictionary_definitions(self, search_word: str) -> dict:
+    def get_dictionary_definitions(self, search_word: str) -> WordDefinition:
         try:
             trimmed_search_word: str = search_word.strip()
-            dictionary_payload: dict = {
+            dictionary_payload: WordDefinition = {
                 'search_word': trimmed_search_word,
                 'definition_is_acceptable': False,
                 'spelling_suggestions': [],
@@ -92,5 +93,5 @@ class Lexicon:
                         dictionary_payload['spelling_suggestions'].append(suggestion)
             return dictionary_payload
         except KeyError as key_error:
-            self._logger.error(f'Received TypeError (get_oxford_def): {str(key_error)}')
+            self._logger.error(f'Received KeyError (get_dictionary_definitions): {str(key_error)}')
             return {'error': str(key_error)}

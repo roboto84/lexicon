@@ -1,8 +1,12 @@
-
 import re
 import logging.config
-from typing import Any
+from typing import Any, Union
 from .data_source import DataSource
+from .types.DictionaryResponseState import DictionaryResponseState
+from .types.DictionaryError import DictionaryError
+from .types.DictionaryApiResponse import DictionaryApiResponse
+from .types.WebsterApiResponse import WebsterApiResponse
+from .types.WebsterApiResponseNotFound import WebsterApiResponseNotFound
 
 
 class LexiconCollect:
@@ -19,8 +23,9 @@ class LexiconCollect:
         self.oxford_app_id = oxford_app_id
         self.oxford_key = oxford_key
 
-    def get_merriam_webster_def(self, search_word: str) -> dict:
-        merriam_dictionary_response = DataSource.query_merriam_webster_api(self.webster_api_key, search_word)
+    def get_merriam_webster_def(self, search_word: str) -> \
+            Union[WebsterApiResponse, DictionaryError, WebsterApiResponseNotFound]:
+        merriam_dictionary_response: list = DataSource.query_merriam_webster_api(self.webster_api_key, search_word)
         if merriam_dictionary_response:
             if type(merriam_dictionary_response[0]) is dict:
                 try:
@@ -44,7 +49,7 @@ class LexiconCollect:
                     if 'shortdef' in mw_subset:
                         definition = mw_subset['shortdef']
 
-                    merriam_response = {
+                    merriam_response: WebsterApiResponse = {
                         'state': 'available',
                         'word_break': word_break,
                         'part_of_speech': part_of_speech,
@@ -73,7 +78,8 @@ class LexiconCollect:
             return self.__unavailable_definition
 
     @DeprecationWarning
-    def get_oxford_def(self, search_word: str) -> dict:
+    def get_oxford_def(self, search_word: str) -> \
+            Union[DictionaryApiResponse, DictionaryError, DictionaryResponseState]:
         oxford_dictionary_response = DataSource.query_oxford_api(self.oxford_app_id, self.oxford_key, search_word)
         if oxford_dictionary_response:
             try:
@@ -115,7 +121,8 @@ class LexiconCollect:
         else:
             return {'state': self.__unavail_state}
 
-    def get_dictionaryapi_def(self, search_word: str) -> dict:
+    def get_dictionaryapi_def(self, search_word: str) -> \
+            Union[DictionaryApiResponse, DictionaryError, DictionaryResponseState]:
         dictionaryapi_dictionary_response = DataSource.query_dictionaryapi(search_word)
         if dictionaryapi_dictionary_response and 'title' not in dictionaryapi_dictionary_response:
             try:
@@ -155,10 +162,11 @@ class LexiconCollect:
                                 if len(definition_container) > 0:
                                     definition.append(f'{definition_container["definition"]} {part_of_speech_view}')
 
-                                if 'example' in definition_container and len(definition_container['example']) >= len(example):
+                                if 'example' in definition_container and \
+                                        len(definition_container['example']) >= len(example):
                                     example = definition_container['example']
 
-                dictionaryapi_response = {
+                dictionaryapi_response: DictionaryApiResponse = {
                     'state': 'available',
                     'word': word,
                     'part_of_speech': part_of_speech,
@@ -169,7 +177,7 @@ class LexiconCollect:
                 }
                 return dictionaryapi_response
             except KeyError as key_error:
-                self._logger.error(f'Received TypeError (get_oxford_def): {str(key_error)}')
+                self._logger.error(f'Received TypeError (get_dictionaryapi_def): {str(key_error)}')
                 return {'error': str(key_error)}
         else:
             return {'state': self.__unavail_state}

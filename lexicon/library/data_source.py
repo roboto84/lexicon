@@ -7,17 +7,17 @@ import json
 
 class DataSource:
     @staticmethod
-    def query_merriam_webster_api(api_key: str, search_word: str) -> dict:
-        url: str = f'https://www.dictionaryapi.com/api/v3/re/collegiate/json/{search_word}'
+    def query_merriam_webster_api(api_key: str, search_word: str) -> list[Union[str, dict]]:
+        url: str = f'https://www.dictionaryapi.com/api/v3/references/collegiate/json/{search_word}'
         querystring: dict = {'key': api_key}
         headers: dict = {'Content-Type': 'application/json'}
         response = requests.request('GET', url, headers=headers, params=querystring)
         if response:
-            package: dict = json.loads(response.text)
+            package: list = json.loads(response.text)
             return package
         else:
             print(f'Merriam Webster API Status code: {response}')
-            return {}
+            return []
 
     @staticmethod
     @DeprecationWarning
