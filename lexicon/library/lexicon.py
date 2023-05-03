@@ -9,11 +9,10 @@ from .types import WordDefinition
 
 
 class Lexicon:
-    def __init__(self, webster_key: str, oxford_app_id: str, oxford_key: str,
-                 sql_lite_db_path: str, logging_object: Any):
+    def __init__(self, webster_key: str, sql_lite_db_path: str, logging_object: Any):
         self._logger: logging.Logger = logging_object.getLogger(type(self).__name__)
         self._logger.setLevel(logging.INFO)
-        self.lexicon_collect = LexiconCollect(webster_key, oxford_app_id, oxford_key, logging_object)
+        self.lexicon_collect = LexiconCollect(webster_key, logging_object)
         self._lexicon_db = LexiconDb(logging_object, sql_lite_db_path)
         self.enchant_dictionary = enchant.Dict('en_US')
 

@@ -12,13 +12,11 @@ if __name__ == '__main__':
     try:
         load_dotenv()
         MERRIAM_WEBSTER_API_KEY: str = os.getenv('MERRIAM_WEBSTER_API_KEY')
-        OXFORD_APP_ID: str = os.getenv('OXFORD_APP_ID')
-        OXFORD_APP_KEY: str = os.getenv('OXFORD_APP_KEY')
         SQL_LITE_DB: str = os.getenv('SQL_LITE_DB')
 
         if len(sys.argv) == 2:
             search_word = sys.argv[1]
-            lexicon = Lexicon(MERRIAM_WEBSTER_API_KEY, OXFORD_APP_ID, OXFORD_APP_KEY, SQL_LITE_DB, logging)
+            lexicon = Lexicon(MERRIAM_WEBSTER_API_KEY, SQL_LITE_DB, logging)
             print(f'\nSearching...')
             print(f'{lexicon.definition_summary(lexicon.get_definition(search_word))}')
         else:

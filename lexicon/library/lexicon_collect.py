@@ -16,12 +16,10 @@ class LexiconCollect:
         'spelling_suggestions': []
     }
 
-    def __init__(self, webster_key: str, oxford_app_id: str, oxford_key: str, logging_object: Any):
+    def __init__(self, webster_key: str, logging_object: Any):
         self._logger: logging.Logger = logging_object.getLogger(type(self).__name__)
         self._logger.setLevel(logging.INFO)
         self.webster_api_key = webster_key
-        self.oxford_app_id = oxford_app_id
-        self.oxford_key = oxford_key
 
     def get_merriam_webster_def(self, search_word: str) -> \
             Union[WebsterApiResponse, DictionaryError, WebsterApiResponseNotFound]:
@@ -76,50 +74,6 @@ class LexiconCollect:
                 return self.__unavailable_definition
         else:
             return self.__unavailable_definition
-
-    @DeprecationWarning
-    def get_oxford_def(self, search_word: str) -> \
-            Union[DictionaryApiResponse, DictionaryError, DictionaryResponseState]:
-        oxford_dictionary_response = DataSource.query_oxford_api(self.oxford_app_id, self.oxford_key, search_word)
-        if oxford_dictionary_response:
-            try:
-                ox_subset = oxford_dictionary_response['results'][0]
-                ox_lex_ent_subset = ox_subset['lexicalEntries'][0]
-                definition = ['n/a']
-                example = audio_file = part_of_speech = pronounce = 'n/a'
-                word = search_word
-
-                if 'word' in oxford_dictionary_response:
-                    word = oxford_dictionary_response['word']
-                if 'text' in ox_lex_ent_subset['lexicalCategory']:
-                    part_of_speech = ox_lex_ent_subset['lexicalCategory']['text']
-                if 'pronunciations' in ox_lex_ent_subset['entries'][0]:
-                    if len(ox_lex_ent_subset['entries'][0]['pronunciations']) > 0 and \
-                            ('phoneticSpelling' in ox_lex_ent_subset['entries'][0]['pronunciations'][0]):
-                        pronounce = ox_lex_ent_subset['entries'][0]['pronunciations'][0]['phoneticSpelling']
-                    if len(ox_lex_ent_subset['entries'][0]['pronunciations']) > 1 and \
-                            ('audioFile' in ox_lex_ent_subset['entries'][0]['pronunciations'][1]):
-                        audio_file = ox_lex_ent_subset['entries'][0]['pronunciations'][1]['audioFile']
-                if 'definitions' in ox_lex_ent_subset['entries'][0]['senses'][0]:
-                    definition = ox_lex_ent_subset['entries'][0]['senses'][0]['definitions']
-                if 'examples' in ox_lex_ent_subset['entries'][0]['senses'][0]:
-                    example = ox_lex_ent_subset['entries'][0]['senses'][0]['examples'][0]['text']
-
-                oxford_response = {
-                    'state': 'available',
-                    'word': word,
-                    'part_of_speech': part_of_speech,
-                    'pronounce': pronounce,
-                    'audio': audio_file,
-                    'definition': definition,
-                    'example': example
-                }
-                return oxford_response
-            except KeyError as key_error:
-                self._logger.error(f'Received TypeError (get_oxford_def): {str(key_error)}')
-                return {'error': str(key_error)}
-        else:
-            return {'state': self.__unavail_state}
 
     def get_dictionaryapi_def(self, search_word: str) -> \
             Union[DictionaryApiResponse, DictionaryError, DictionaryResponseState]:
