@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'lexicon'
-version = '0.3.0'
+version = '0.4.0'
 description = 'Command line and lib toolset for word definitions, spell check, and spelling suggestions'
 authors = ['roboto84 <7658704+roboto84@users.noreply.github.com>']
 
@@ -9,7 +9,7 @@ python = '^3.10'
 requests = '^2.28.1'
 python-dotenv = '^0.15.0'
 pyenchant = '^3.2.0'
-willow-core = {git = 'https://github.com/roboto84/willow_core.git', rev = '646a99f'}
+willow-core = {git = 'https://github.com/roboto84/willow_core.git', tag = 'v0.1.1'}
 
 [tool.poetry.dev-dependencies]
 pytest = '^7.2.0'

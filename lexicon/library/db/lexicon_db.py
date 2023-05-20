@@ -2,7 +2,8 @@
 import logging.config
 import os
 from willow_core.library.sqlite_db import SqlLiteDb
-from sqlite3 import Connection, Cursor, Error
+from willow_core.library.db_types import DeleteDbItemResponse
+from sqlite3 import Connection, Cursor, Error, Row
 from typing import Any, List, Optional
 
 
@@ -34,6 +35,12 @@ class LexiconDb(SqlLiteDb):
             self._logger.info(f'Database has been initialized')
         except Error as error:
             self._logger.error(f'Error occurred initializing Lexi_DB: {str(error)}')
+
+    def get_word_count(self) -> Row:
+        return self._query_for_db_rows("SELECT COUNT(*) as count_word FROM WORDS")[0]
+
+    def delete_lexicon_record(self, data_key: str) -> DeleteDbItemResponse:
+        return self.delete_record(data_key, 'word', 'WORDS')
 
     def get_words(self, word_limit: Optional[int] = None) -> List[str]:
         try:

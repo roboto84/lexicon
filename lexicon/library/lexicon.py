@@ -1,6 +1,8 @@
 
 import enchant
 import logging.config
+
+from willow_core.library.db_types import DeleteDbItemResponse
 from typing import List, Any, Optional
 from .lexicon_collect import LexiconCollect
 from .lexicon_utils import LexiconUtils
@@ -34,6 +36,9 @@ class Lexicon:
 
     def spell_check_suggest(self, word: str) -> List[str]:
         return self.enchant_dictionary.suggest(word)
+
+    def get_record_count(self) -> int:
+        return int(self._lexicon_db.get_word_count()[0])
 
     def get_stored_words(self, word_limit: Optional[int] = None) -> List[str]:
         return self._lexicon_db.get_words(word_limit)
@@ -94,3 +99,16 @@ class Lexicon:
         except KeyError as key_error:
             self._logger.error(f'Received KeyError (get_dictionary_definitions): {str(key_error)}')
             return {'error': str(key_error)}
+
+    def delete_item(self, data_key: str) -> DeleteDbItemResponse:
+        response: DeleteDbItemResponse = {
+            'deleted_item': False,
+            'reason': 'error',
+            'data': []
+        }
+        try:
+            response = self._lexicon_db.delete_lexicon_record(data_key)
+        except Exception as exception:
+            self._logger.error(f'Exception was thrown: {str(exception)}')
+        finally:
+            return response
