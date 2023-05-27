@@ -2,6 +2,8 @@ import os
 import sys
 import logging.config
 from dotenv import load_dotenv
+
+from library.types.Search import SearchType
 from library.lexicon import Lexicon
 
 if __name__ == '__main__':

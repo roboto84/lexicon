@@ -8,6 +8,7 @@ from .lexicon_collect import LexiconCollect
 from .lexicon_utils import LexiconUtils
 from .db.lexicon_db import LexiconDb
 from .types import WordDefinition
+from .types.Search import SearchType
 
 
 class Lexicon:
@@ -51,21 +52,24 @@ class Lexicon:
             self._lexicon_db.get_random_word_def()
         )
 
-    def get_definition(self, search_word: str) -> dict:
+    def get_definition(self, search_word: str, search_type: Optional[SearchType] = None) -> dict:
         trimmed_search_word: str = search_word.strip()
-        simple_definition_data: dict
+        simple_definition_data: dict = {
+            'definition_is_acceptable': False
+        }
         attempt_db_word_definition: dict = self._lexicon_db.get_word_from_db(trimmed_search_word)
 
         if attempt_db_word_definition:
             simple_definition_data = LexiconUtils.dictionary_data_from_db(attempt_db_word_definition)
             simple_definition_data['source'] = 'db'
         else:
-            simple_definition_data = LexiconUtils.dictionary_data_from_api(
-                self.get_dictionary_definitions(trimmed_search_word)
-            )
-            simple_definition_data['source'] = 'web'
-            if simple_definition_data['definition_is_acceptable']:
-                self._lexicon_db.insert_word(simple_definition_data)
+            if search_type != SearchType.CACHED:
+                simple_definition_data = LexiconUtils.dictionary_data_from_api(
+                    self.get_dictionary_definitions(trimmed_search_word)
+                )
+                simple_definition_data['source'] = 'web'
+                if simple_definition_data['definition_is_acceptable']:
+                    self._lexicon_db.insert_word(simple_definition_data)
         return simple_definition_data
 
     def get_dictionary_definitions(self, search_word: str) -> WordDefinition:
