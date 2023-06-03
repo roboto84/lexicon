@@ -1,10 +1,14 @@
 
 import ast
+from typing import Union
+
+from lexicon.library.types.DictionaryDefinitionPackage import DictionaryDefinitionPackage
+from lexicon.library.types.WordDefinition import WordDefinition
 
 
 class LexiconUtils:
     @staticmethod
-    def definition_is_acceptable(data: dict) -> bool:
+    def definition_is_acceptable(data: WordDefinition) -> bool:
         webster_def_is_good = ('state' in data['merriam_webster'] and data['merriam_webster']['state'] != 'unavailable')
         oxford_def_is_good = ('state' in data['oxford'] and data['oxford']['state'] != 'unavailable')
         return webster_def_is_good or oxford_def_is_good
@@ -35,7 +39,7 @@ class LexiconUtils:
             print(f'Received error (chat_message_builder): {str(type_error)}')
 
     @staticmethod
-    def dictionary_data_from_db(data: dict) -> dict:
+    def dictionary_data_from_db(data: dict) -> Union[DictionaryDefinitionPackage, dict]:
         try:
             if 'word' in data:
                 return {
@@ -60,7 +64,7 @@ class LexiconUtils:
             print(f'Received KeyError (dictionary_data_from_db): {str(key_error)}')
 
     @staticmethod
-    def dictionary_data_from_api(data: dict) -> dict:
+    def dictionary_data_from_api(data: WordDefinition) -> DictionaryDefinitionPackage:
         date_first_used: str = ''
         part_of_speech: str = ''
         word_break: str = ''

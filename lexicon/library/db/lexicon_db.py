@@ -5,6 +5,8 @@ from willow_core.library.sqlite_db import SqlLiteDb
 from willow_core.library.db_types import DeleteDbItemResponse
 from sqlite3 import Connection, Cursor, Error, Row
 from typing import Any, List, Optional
+from .initial_db_data import initial_definitions
+from lexicon.library.types.DictionaryDefinitionPackage import DictionaryDefinitionPackage
 
 
 class LexiconDb(SqlLiteDb):
@@ -24,6 +26,7 @@ class LexiconDb(SqlLiteDb):
         else:
             self._logger.info(f'Tables not found')
             self._create_db_schema()
+            self._load_init_db_data()
 
     def _create_db_schema(self) -> None:
         try:
@@ -35,6 +38,10 @@ class LexiconDb(SqlLiteDb):
             self._logger.info(f'Database has been initialized')
         except Error as error:
             self._logger.error(f'Error occurred initializing Lexi_DB: {str(error)}')
+
+    def _load_init_db_data(self) -> None:
+        for definition_data in initial_definitions:
+            self.insert_word(definition_data)
 
     def get_word_count(self) -> Row:
         return self._query_for_db_rows("SELECT COUNT(*) as count_word FROM WORDS")[0]
@@ -87,7 +94,7 @@ class LexiconDb(SqlLiteDb):
         except Error as error:
             self._logger.error(f'Error occurred getting word "{search_word}" from Lexi_DB: {str(error)}')
 
-    def insert_word(self, def_data: dict) -> None:
+    def insert_word(self, def_data: DictionaryDefinitionPackage) -> None:
         word: str = def_data['word'].lower()
         sql_path: str = self.add_file_path('/sql/insert_word.sql')
         conn: Connection = self._db_connect()
